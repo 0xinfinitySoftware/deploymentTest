@@ -59,7 +59,7 @@ jobs:
           [Service]
           User=root
           WorkingDirectory=/var/www/${{env.APP_NAME}}
-          ExecStart=/var/www/${{envAPP_NAME}}/${env{APP_NAME}}
+          ExecStart=/var/www/${{env.APP_NAME}}/${{env.APP_NAME}}
           ExecStop=/bin/kill $MAINPID
           KillSignal=SIGINT
           Restart=always
