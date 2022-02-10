@@ -104,8 +104,7 @@ jobs:
                           proxy_set_header X-Forwarded-Proto $scheme;
                       }
                   }
-                  EOF
-                  
+          EOF
                   nginx -t
                   if [[ $? == 0 ]]; then
                   nginx -s reload
