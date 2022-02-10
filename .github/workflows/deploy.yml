@@ -25,9 +25,9 @@ jobs:
     - name: Deploy
       uses: appleboy/scp-action@master
       env:
-        HOST: $TARGET_HOST
-        USERNAME: $TARGET_USERNAME
-        PORT: $TARGET_PORT
+        HOST: ${{env.TARGET_HOST}}
+        USERNAME: ${{env.TARGET_USERNAME}}
+        PORT: ${{env.TARGET_PORT}}
         KEY: ${{ secrets.ssh_beta }}
       with:
         source: "publish"
@@ -37,9 +37,9 @@ jobs:
     - name: Restart service
       uses: appleboy/ssh-action@master
       with:
-        HOST: $TARGET_HOST
-        USERNAME: $TARGET_USERNAME
-        PORT: $TARGET_PORT
+        HOST: ${{env.TARGET_HOST}}
+        USERNAME: ${{env.TARGET_USERNAME}}
+        PORT: ${{env.TARGET_PORT}}
         KEY: ${{ secrets.ssh_beta }}
         script: |
           systemctl restart ${{env.SERVICE_NAME}} &
