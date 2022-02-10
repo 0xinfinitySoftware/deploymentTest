@@ -42,4 +42,4 @@ jobs:
         PORT: $TARGET_PORT
         KEY: ${{ secrets.ssh_beta }}
         script: |
-          systemctl restart $SERVICE_NAME &
+          systemctl restart ${{env.SERVICE_NAME}} &
