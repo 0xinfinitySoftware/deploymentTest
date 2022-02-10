@@ -7,6 +7,8 @@ on:
     branches: [ main ]
 env:
   APP_NAME: DeploymentTest
+  APP_PORT: 8080
+  APP_ADDRESS: 0xinfinity.bieda.it
   TARGET_HOST: ${{ secrets.TARGET_HOST_BETA }}
   TARGET_PORT: ${{ secrets.TARGET_PORT_BETA }}
   TARGET_USERNAME: ${{ secrets.USERNAME_BETA }}
@@ -42,6 +44,7 @@ jobs:
         PORT: ${{env.TARGET_PORT}}
         KEY: ${{ secrets.ssh_beta }}
         script: |
+          echo "Create or restart service"
           IS_ACTIVE=$(sudo systemctl is-active ${{env.SERVICE_NAME}})
           if [ "$IS_ACTIVE" == "active" ]; then
               # restart the service
@@ -77,3 +80,34 @@ jobs:
               sudo systemctl start ${{env.SERVICE_NAME}}
               echo "Service Started"
           fi
+
+           echo "Create or update nginx site"
+            if  ! test -f "/etc/nginx/sites-available/${{env.APP_NAME}}"; then  
+            echo "Creating nginx server"; 
+               sudo cat > /etc/nginx/sites-available/${{env.APP_NAME}} << EOF
+                 server {
+                    listen 80 ;
+                    listen [::]:80 ;
+
+                    root /var/www/;
+
+                    server_name ${{env.APP_ADDRESS}};
+
+                    location / {
+                        proxy_pass http://localhost:${{env.APP_PORT}};
+                        proxy_http_version 1.1;
+                        proxy_set_header Upgrade $http_upgrade;
+                        proxy_set_header Connection keep-alive;
+                        proxy_set_header Host $host;
+                        proxy_cache_bypass $http_upgrade;
+                        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                        proxy_set_header X-Forwarded-Proto $scheme;
+                    }
+                }
+
+                  EOF
+                  nginx -t
+                  if [[ $? == 0 ]]; then
+                  nginx -s reload
+                  fi
+            fi
