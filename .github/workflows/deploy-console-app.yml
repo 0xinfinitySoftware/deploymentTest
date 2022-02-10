@@ -52,7 +52,7 @@ jobs:
           else
               # create service file
               echo "Creating service file"
-              sudo cat > /etc/systemd/system/${${{env.SERVICE_NAME}}//'"'/}.service << EOF
+              sudo cat > /etc/systemd/system/${{env.SERVICE_NAME}}.service << EOF
           [Unit]
           Description=${{env.SERVICE_NAME}}
           After=network.target
@@ -73,7 +73,7 @@ jobs:
           EOF
               echo "Reloading daemon and enabling service"
               sudo systemctl daemon-reload 
-              sudo systemctl enable ${${{env.SERVICE_NAME}}//'.service'/} # remove the extension
-              sudo systemctl start ${${{env.SERVICE_NAME}}//'.service'/}
+              sudo systemctl enable ${{env.SERVICE_NAME}}.service
+              sudo systemctl start ${{env.SERVICE_NAME}}
               echo "Service Started"
           fi
