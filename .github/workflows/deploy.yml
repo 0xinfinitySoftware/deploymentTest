@@ -7,9 +7,9 @@ on:
     branches: [ main ]
 env:
   APP_NAME: DeploymentTest
-  TARGET_HOST: srv07.mikr.us
-  TARGET_PORT: 10224
-  TARGET_USERNAME: root
+  TARGET_HOST: ${{ secrets.TARGET_HOST_BETA }}
+  TARGET_PORT: ${{ secrets.TARGET_PORT_BETA }}
+  TARGET_USERNAME: ${{ secrets.USERNAME_BETA }}
   SERVICE_NAME: test-app
   
 jobs:
@@ -28,7 +28,7 @@ jobs:
         HOST: ${{env.TARGET_HOST}}
         USERNAME: ${{env.TARGET_USERNAME}}
         PORT: ${{env.TARGET_PORT}}
-        KEY: ${{ secrets.ssh_beta }}
+        KEY: ${{ secrets.SSH_BETA }}
       with:
         source: "publish"
         target: "/var/www/${{env.APP_NAME}}"
