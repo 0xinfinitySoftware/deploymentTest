@@ -31,7 +31,7 @@ jobs:
         KEY: ${{ secrets.ssh_beta }}
       with:
         source: "publish"
-        target: "/var/www/$APP_NAME"
+        target: "/var/www/${{env.APP_NAME}}"
         strip_components: 1
         
     - name: Restart service
