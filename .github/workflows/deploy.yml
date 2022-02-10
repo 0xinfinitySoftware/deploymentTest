@@ -6,7 +6,7 @@ on:
   pull_request:
     branches: [ main ]
 env:
-  APP_NAME: TestApp
+  APP_NAME: deploymentTest
   TARGET_HOST: srv07.mikr.us
   TARGET_PORT: 10224
   TARGET_USERNAME: root
