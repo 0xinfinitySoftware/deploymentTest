@@ -105,7 +105,7 @@ jobs:
                       }
                   }
           EOF
-                  sudo ln -s /etc/nginx/sites-available/${{env.APP_NAME}}.conf /etc/nginx/sites-enable/${{env.APP_NAME}}.conf
+                  sudo ln -s /etc/nginx/sites-available/${{env.APP_NAME}}.conf /etc/nginx/sites-enabled/${{env.APP_NAME}}.conf
                   nginx -t
                   if [[ $? == 0 ]]; then
                   nginx -s reload
