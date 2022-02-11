@@ -6,13 +6,13 @@ on:
   pull_request:
     branches: [ main ]
 env:
-  APP_NAME: DeploymentTest
+  APP_NAME: DeploymentTest.Web
   APP_PORT: 7654
   APP_ADDRESS: 0xinfinity.bieda.it
   TARGET_HOST: ${{ secrets.TARGET_HOST_BETA }}
   TARGET_PORT: ${{ secrets.TARGET_PORT_BETA }}
   TARGET_USERNAME: ${{ secrets.USERNAME_BETA }}
-  SERVICE_NAME: test-web-app
+  SERVICE_NAME: test-web-app2
   
 jobs:
   deployment:
