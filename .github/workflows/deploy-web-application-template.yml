@@ -1,0 +1,113 @@
+name: Deploy Web to Beta
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+env:
+  APP_NAME: DeploymentTest
+  APP_PORT: 7654
+  APP_ADDRESS: 0xinfinity.bieda.it
+  TARGET_HOST: ${{ secrets.TARGET_HOST_BETA }}
+  TARGET_PORT: ${{ secrets.TARGET_PORT_BETA }}
+  TARGET_USERNAME: ${{ secrets.USERNAME_BETA }}
+  SERVICE_NAME: test-web-app
+  
+jobs:
+  deployment:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '5.0.x' 
+    - run: dotnet publish ${{env.APP_NAME}} -o publish --configuration Release
+    
+    - name: Deploy
+      uses: appleboy/scp-action@master
+      env:
+        HOST: ${{env.TARGET_HOST}}
+        USERNAME: ${{env.TARGET_USERNAME}}
+        PORT: ${{env.TARGET_PORT}}
+        KEY: ${{ secrets.SSH_BETA }}
+      with:
+        source: "publish"
+        target: "/var/www/${{env.APP_NAME}}"
+        strip_components: 1
+        
+    - name: Restart service
+      uses: appleboy/ssh-action@master
+      with:
+        HOST: ${{env.TARGET_HOST}}
+        USERNAME: ${{env.TARGET_USERNAME}}
+        PORT: ${{env.TARGET_PORT}}
+        KEY: ${{ secrets.ssh_beta }}
+        script: |
+          echo "Create or restart service"
+          IS_ACTIVE=$(sudo systemctl is-active ${{env.SERVICE_NAME}})
+          if [ "$IS_ACTIVE" == "active" ]; then
+              # restart the service
+              echo "Service is running"
+              echo "Restarting service"
+              sudo systemctl restart ${{env.SERVICE_NAME}}
+              echo "Service restarted"
+          else
+              # create service file
+              echo "Creating service file"
+              sudo cat > /etc/systemd/system/${{env.SERVICE_NAME}}.service << EOF
+          [Unit]
+          Description=${{env.SERVICE_NAME}}
+          After=network.target
+          [Service]
+          User=root
+          WorkingDirectory=/var/www/${{env.APP_NAME}}
+          ExecStart=/var/www/${{env.APP_NAME}}/${{env.APP_NAME}}
+          ExecStop=/bin/kill $MAINPID
+          KillSignal=SIGINT
+          Restart=always
+          RestartSec=10
+          UMask=0002
+          StandardOutput=null
+          Environment=ASPNETCORE_ENVIRONMENT=Production
+          Environment=DOTNET_PRINT_TELEMETRY_MESSAGE=false
+          [Install]
+          WantedBy=multi-user.target
+          EOF
+              echo "Reloading daemon and enabling service"
+              sudo systemctl daemon-reload 
+              sudo systemctl enable ${{env.SERVICE_NAME}}.service
+              sudo systemctl start ${{env.SERVICE_NAME}}
+              echo "Service Started"
+          fi
+
+           echo "Create or update nginx site"
+            if  ! test -f "/etc/nginx/sites-available/${{env.APP_NAME}}.conf"; then  
+            echo "Creating nginx server"; 
+               sudo cat > /etc/nginx/sites-available/${{env.APP_NAME}}.conf << EOF
+                   server {
+                      listen 80 ;
+                      listen [::]:80 ;
+
+                      root /var/www/;
+
+                      server_name ${{env.APP_ADDRESS}};
+
+                      location / {
+                          proxy_pass http://localhost:${{env.APP_PORT}};
+                          proxy_http_version 1.1;
+                          proxy_set_header Upgrade \$http_upgrade;
+                          proxy_set_header Connection keep-alive;
+                          proxy_set_header Host \$host;
+                          proxy_cache_bypass \$http_upgrade;
+                          proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+                          proxy_set_header X-Forwarded-Proto \$scheme;
+                      }
+                  }
+          EOF
+                  sudo ln -s /etc/nginx/sites-available/${{env.APP_NAME}}.conf /etc/nginx/sites-enable/${{env.APP_NAME}}.conf
+                  nginx -t
+                  if [[ $? == 0 ]]; then
+                  nginx -s reload
+                  fi
+            fi
