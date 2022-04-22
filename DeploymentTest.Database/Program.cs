@@ -7,13 +7,14 @@ var builder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory());
 
 
-
+Console.WriteLine(args.Length);
 if (args.Length < 5)
 {
     throw new ArgumentException("Invalid parameters");
 }
 
 var connectionString = $"Server={args[0]};Uid={args[1]};Database={args[2]};Pwd={args[3]};Port={args[4]};";
+Console.WriteLine(connectionString);
 
 builder.Build().Bind(connectionString);
 
