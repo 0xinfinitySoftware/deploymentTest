@@ -10,7 +10,11 @@ env:
   TARGET_HOST: ${{ secrets.TARGET_HOST_BETA }}
   TARGET_PORT: ${{ secrets.TARGET_PORT_BETA }}
   TARGET_USERNAME: ${{ secrets.USERNAME_BETA }}
-  
+  DB_HOST: ${{ secrets.DB_HOST_BETA }}
+  DB_USER: ${{ secrets.DB_USER_BETA }}
+  DB_PASS: ${{ secrets.DB_PASS_BETA }}
+  DB_PORT: ${{ secrets.DB_PORT_BETA }}
+  DB_NAME: ${{ secrets.DB_NAME_BETA }}
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -42,4 +46,4 @@ jobs:
         script: |
           echo "Execute migration"
           cd /var/www/${{env.APP_NAME}}
-          ./${{env.APP_NAME}}
+          ./${{env.APP_NAME}} ${{env.DB_HOST}} ${{env.DB_USER}}  ${{env.DB_NAME}} ${{env.DB_PASS}} ${{env.DB_PORT}}  
