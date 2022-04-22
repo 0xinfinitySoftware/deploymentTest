@@ -1,27 +1,38 @@
-﻿using DeploymentTest.Database;
-using FluentMigrator.Runner;
+﻿using FluentMigrator.Runner;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-var appSettings = new AppSettings();
 
 var builder = new ConfigurationBuilder()
-    .SetBasePath(Directory.GetCurrentDirectory())
-    .AddJsonFile("appsettings.json", false, false);
+    .SetBasePath(Directory.GetCurrentDirectory());
 
-builder.Build().Bind(appSettings);
 
-var serviceProvider = CreateServices(appSettings);
+
+if (args.Length < 5)
+{
+    throw new ArgumentException("Invalid parameters");
+}
+
+var connectionString = $"Server={args[0]};Uid={args[1]};Database={args[2]};Pwd={args[3]};Port={args[4]};";
+
+builder.Build().Bind(connectionString);
+
+var serviceProvider = CreateServices(connectionString);
 
 using var scope = serviceProvider.CreateScope();
-
-if (args.Length == 0)
+ 
+if (args.Length == 5)
+{
+    Console.WriteLine("Updating database");
     UpdateDatabase(scope.ServiceProvider);
+}
 else
 {
-    if (args[0] == "-down")
+    if (args[5] == "-down")
     {
-        var version = Convert.ToInt64(args[1]);
+        var version = Convert.ToInt64(args[6]);
+        Console.WriteLine($"Migrating down to version {version}");
+
         MigrateDown(scope.ServiceProvider, version);
     }
     else
@@ -30,14 +41,14 @@ else
     }
 }
 
-static IServiceProvider CreateServices(AppSettings configuration)
+static IServiceProvider CreateServices(string connectionString)
 {
     return new ServiceCollection()
         .AddFluentMigratorCore()
         .ConfigureRunner(rb => rb
             .AddMySql5()
             .WithGlobalCommandTimeout(TimeSpan.FromSeconds(10))
-            .WithGlobalConnectionString(configuration.Db.ConnectionString)
+            .WithGlobalConnectionString(connectionString)
             .ScanIn(typeof(Program).Assembly).For.Migrations())
         .AddLogging(lb => lb.AddFluentMigratorConsole())
         .BuildServiceProvider(false);
