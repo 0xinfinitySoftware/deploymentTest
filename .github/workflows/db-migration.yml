@@ -41,5 +41,5 @@ jobs:
         KEY: ${{ secrets.ssh_beta }}
         script: |
           echo "Execute migration"
-          cd /var/www/${{env.APP_NAME}
+          cd /var/www/${{env.APP_NAME}}
           ./${{env.APP_NAME}}
