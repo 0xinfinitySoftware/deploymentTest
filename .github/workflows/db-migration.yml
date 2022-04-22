@@ -1,0 +1,49 @@
+name: Deploy to Beta
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+env:
+  APP_NAME: DeploymentTest.Database
+  TARGET_HOST: ${{ secrets.TARGET_HOST_BETA }}
+  TARGET_PORT: ${{ secrets.TARGET_PORT_BETA }}
+  TARGET_USERNAME: ${{ secrets.USERNAME_BETA }}
+  DB_HOST: ${{ secrets.DB_HOST_BETA }}
+  DB_USER: ${{ secrets.DB_USER_BETA }}
+  DB_PASS: ${{ secrets.DB_PASS_BETA }}
+  DB_PORT: ${{ secrets.DB_PORT_BETA }}
+  DB_NAME: ${{ secrets.DB_NAME_BETA }}
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@main
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '6.0.x' 
+    - run: dotnet publish ${{env.APP_NAME}} -o publish --configuration Release
+    
+    - name: Deploy
+      uses: appleboy/scp-action@master
+      env:
+        HOST: ${{env.TARGET_HOST}}
+        USERNAME: ${{env.TARGET_USERNAME}}
+        PORT: ${{env.TARGET_PORT}}
+        KEY: ${{ secrets.SSH_BETA }}
+      with:
+        source: "publish"
+        target: "/var/www/${{env.APP_NAME}}"
+        strip_components: 1
+    - name: Execute Migration
+      uses: appleboy/ssh-action@master
+      with:
+        HOST: ${{env.TARGET_HOST}}
+        USERNAME: ${{env.TARGET_USERNAME}}
+        PORT: ${{env.TARGET_PORT}}
+        KEY: ${{ secrets.ssh_beta }}
+        script: |
+          echo "Execute migration"
+          cd /var/www/${{env.APP_NAME}}
+          ./${{env.APP_NAME}} ${{env.DB_HOST}} ${{env.DB_USER}} ${{env.DB_NAME}} ${{env.DB_PASS}} ${{env.DB_PORT}}  
