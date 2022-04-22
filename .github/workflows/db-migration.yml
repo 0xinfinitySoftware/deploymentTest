@@ -32,4 +32,13 @@ jobs:
         source: "publish"
         target: "/var/www/${{env.APP_NAME}}"
         strip_components: 1
-        
+    - name: Execute Migration
+      uses: appleboy/ssh-action@master
+      with:
+        HOST: ${{env.TARGET_HOST}}
+        USERNAME: ${{env.TARGET_USERNAME}}
+        PORT: ${{env.TARGET_PORT}}
+        KEY: ${{ secrets.ssh_beta }}
+        script: |
+          echo "Execute migration"
+          /var/www/${{env.APP_NAME}}
