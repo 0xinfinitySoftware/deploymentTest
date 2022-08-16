@@ -7,13 +7,13 @@ var builder = new ConfigurationBuilder()
     .SetBasePath(Directory.GetCurrentDirectory());
 
 
-Console.WriteLine(args.Length);
-if (args.Length < 5)
+if (args.Length < 1)
 {
     throw new ArgumentException("Invalid parameters");
 }
 
-var connectionString = $"Server={args[0]};Uid={args[1]};Database={args[2]};Pwd={args[3]};Port={args[4]};";
+var connectionString = args[0];
+
 Console.WriteLine(connectionString);
 
 builder.Build().Bind(connectionString);
@@ -21,17 +21,17 @@ builder.Build().Bind(connectionString);
 var serviceProvider = CreateServices(connectionString);
 
 using var scope = serviceProvider.CreateScope();
- 
-if (args.Length == 5)
+
+if (args.Length == 1)
 {
     Console.WriteLine("Updating database");
     UpdateDatabase(scope.ServiceProvider);
 }
 else
 {
-    if (args[5] == "-down")
+    if (args[1] == "-down" && args.Length == 3)
     {
-        var version = Convert.ToInt64(args[6]);
+        var version = Convert.ToInt64(args[2]);
         Console.WriteLine($"Migrating down to version {version}");
 
         MigrateDown(scope.ServiceProvider, version);
