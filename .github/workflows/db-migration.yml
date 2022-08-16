@@ -1,4 +1,4 @@
-name: Deploy to Beta
+name: Run DB Migration
 
 on:
   push:
@@ -10,11 +10,7 @@ env:
   TARGET_HOST: ${{ secrets.TARGET_HOST_BETA }}
   TARGET_PORT: ${{ secrets.TARGET_PORT_BETA }}
   TARGET_USERNAME: ${{ secrets.USERNAME_BETA }}
-  DB_HOST: ${{ secrets.DB_HOST_BETA }}
-  DB_USER: ${{ secrets.DB_USER_BETA }}
-  DB_PASS: ${{ secrets.DB_PASS_BETA }}
-  DB_PORT: ${{ secrets.DB_PORT_BETA }}
-  DB_NAME: ${{ secrets.DB_NAME_BETA }}
+  CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
 jobs:
   build:
     runs-on: ubuntu-latest
