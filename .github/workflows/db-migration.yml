@@ -46,4 +46,4 @@ jobs:
         script: |
           echo "Execute migration"
           cd /var/www/${{env.APP_NAME}}
-          ./${{env.APP_NAME}} ${{env.DB_HOST}} ${{env.DB_USER}} ${{env.DB_NAME}} ${{env.DB_PASS}} ${{env.DB_PORT}}  
+          ./${{env.APP_NAME}} ${{env.CONNECTION_STRING}}  
